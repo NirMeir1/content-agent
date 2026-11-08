@@ -1,0 +1,52 @@
+{
+  "name": "bottomline-content-lab",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "npm run build && playwright test",
+    "db:migrate": "tsx scripts/database.ts migrate",
+    "db:push": "npm run db:migrate",
+    "demo:seed": "tsx scripts/database.ts seed",
+    "demo:reset": "tsx scripts/database.ts reset",
+    "format": "prettier --write src scripts tests *.ts *.mjs *.json",
+    "test:access": "tsx scripts/verify-access.ts"
+  },
+  "dependencies": {
+    "@fontsource/heebo": "^5.3.0",
+    "@libsql/client": "latest",
+    "drizzle-orm": "latest",
+    "lucide-react": "latest",
+    "next": "16.4.5",
+    "openai": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@playwright/test": "latest",
+    "@tailwindcss/postcss": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "dotenv": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "16.4.5",
+    "prettier": "^3.9.10",
+    "tailwindcss": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  },
+  "type": "module",
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "11.0.1"
+    }
+  }
+}
