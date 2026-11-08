@@ -9,13 +9,85 @@ import {
   validateFormat,
   localDate,
 } from "../src/lib/contracts";
-import { seededState, emptyState, demoDraft } from "../src/lib/demo";
+import {
+  seededState,
+  emptyState,
+  demoDraft,
+  demoPlan,
+  blankProfile,
+} from "../src/lib/demo";
 import { applyAction } from "../src/lib/actions";
 import { context, createPlan, createDraft, instructions } from "../src/lib/ai";
 import { loadWorkspace, saveWorkspace, reserveGeneration } from "../src/lib/db";
 import { signSession, verifySession, codeMatches } from "../src/lib/auth";
 afterEach(() => vi.unstubAllEnvs());
 describe("contracts and grounded generation", () => {
+  it.each([
+    {
+      business: "מאפיית בדיקה",
+      field: "מאפייה",
+      services: "עוגות חתונה",
+      audience: "זוגות לפני חתונה",
+      needs: "בחירת עיצוב לעוגה",
+      goal: "הזמנות לעוגות חתונה",
+    },
+    {
+      business: "פרחים לבדיקה",
+      field: "חנות פרחים",
+      services: "זרי פרחים במשלוח",
+      audience: "אנשים שמחפשים מתנה",
+      needs: "בחירת זר למתנה",
+      goal: "פניות לגבי משלוחי פרחים",
+    },
+  ])(
+    "grounds no-key topics and all draft formats in $business rather than coaching",
+    async (business) => {
+      vi.stubEnv("OPENAI_API_KEY", "");
+      const s = seededState();
+      s.profile = { ...structuredClone(blankProfile), ...business };
+      const originalPlan = structuredClone(s.plans[0]);
+      const originalIdeas = structuredClone(s.ideas);
+      await applyAction(s, {
+        action: "plan",
+        workspace: "demo",
+        revision: 0,
+        month: "2027-05",
+        goal: business.goal,
+        frequency: 2,
+      });
+      expect(s.plans[0]).toEqual(originalPlan);
+      expect(s.ideas.slice(0, originalIdeas.length)).toEqual(originalIdeas);
+      const generated = s.ideas.filter((i) => i.planId === s.plans.at(-1)!.id);
+      expect(generated).toHaveLength(8);
+      const planText = JSON.stringify(generated);
+      expect(planText).toContain(business.services);
+      expect(planText).not.toMatch(
+        /תכנון שבוע|משימה אחת|עצמאיות|סדרי עדיפויות/,
+      );
+      for (const idea of generated.slice(0, 4)) {
+        idea.status = "accepted";
+        const draft = await createDraft(s, idea);
+        validateFormat(draft.content, idea.format);
+        expect(draft.content.caption).toContain(business.services);
+        expect(JSON.stringify(draft.content)).not.toMatch(
+          /תכנון שבוע|משימה אחת|עצמאיות|סימון משבצת/,
+        );
+      }
+      expect(
+        planOutputSchema.safeParse(demoPlan(s.profile, "2027-05")).success,
+      ).toBe(true);
+    },
+  );
+  it("does not invent a coaching business when optional details are missing", () => {
+    const p = {
+      ...structuredClone(blankProfile),
+      business: "עסק חדש",
+      audience: "קהל חדש",
+    };
+    const result = demoPlan(p, "2027-05");
+    expect(result.ideas.every((i) => i.missing.length > 0)).toBe(true);
+    expect(JSON.stringify(result)).not.toMatch(/עצמאיות|תכנון שבוע|משימה אחת/);
+  });
   it("builds strict Responses JSON schemas for plan, draft and revision", () => {
     for (const [name, schema] of [
       ["plan", planOutputSchema],
@@ -144,7 +216,7 @@ describe("review transitions and persistence", () => {
     const s = seededState();
     const d = s.drafts[0];
     const original = structuredClone(d.versions);
-    s.profile.banned = "איזו משימה";
+    s.profile.banned = "איזו שאלה";
     let saved: typeof s | undefined;
     await expect(
       applyAction(

@@ -13,15 +13,18 @@ export function Planner({
   s,
   send,
   openDraft,
+  ai,
 }: {
   s: State;
   send: Send;
   openDraft: (id: string) => void;
+  ai: boolean;
 }) {
   const [month, setMonth] = useState(localDate().slice(0, 7));
   const [goal, setGoal] = useState(s.profile.goal);
   const [frequency, setFrequency] = useState(s.profile.frequency);
   const [list, setList] = useState(false);
+  const [planSelection, setPlanSelection] = useState("latest");
   const [edit, setEdit] = useState<Idea | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const editingId = edit?.id;
@@ -63,8 +66,16 @@ export function Planner({
   }, [editingId]);
   const [event, setEvent] = useState({ date: localDate(), details: "" });
   const plans = s.plans.filter((p) => p.month === month);
+  const activePlan =
+    planSelection === "all"
+      ? undefined
+      : plans.find((p) => p.id === planSelection) || plans.at(-1);
+  const displayedPlans = activePlan ? [activePlan] : plans;
   const ideas = s.ideas
-    .filter((i) => i.date.startsWith(month))
+    .filter(
+      (i) =>
+        i.date.startsWith(month) && (!activePlan || i.planId === activePlan.id),
+    )
     .sort((a, b) => a.date.localeCompare(b.date));
   const days = new Date(
     Number(month.slice(0, 4)),
@@ -121,11 +132,18 @@ export function Planner({
       <p className="intro">
         קודם כיוון ורעיונות. רק אחרי שתבחרי, נכתוב את הטיוטות.
       </p>
+      {!ai && (
+        <p className="warning">
+          מצב הדגמה ללא AI: הרעיונות נבנים בתבניות לפי פרטי העסק השמורים. זו
+          אינה אסטרטגיה אישית שנוצרה ב־AI; תשובות מקצועיות דורשות השלמה שלך.
+        </p>
+      )}
       <form
         className="panel plan-controls"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          void send({ action: "plan", month, goal, frequency });
+          if (await send({ action: "plan", month, goal, frequency }))
+            setPlanSelection("latest");
         }}
       >
         <Field label="חודש התוכנית">
@@ -134,7 +152,10 @@ export function Planner({
             required
             value={month}
             onChange={(e) => {
-              if (e.target.value) setMonth(e.target.value);
+              if (e.target.value) {
+                setMonth(e.target.value);
+                setPlanSelection("latest");
+              }
             }}
           />
         </Field>
@@ -156,7 +177,31 @@ export function Planner({
         </Field>
         <button className="primary">בנה לי תוכנית תוכן</button>
       </form>
-      {plans.map((p) => (
+      {plans.length > 0 && (
+        <div className="panel">
+          <Field label="תוכנית להצגה">
+            <select
+              value={planSelection}
+              onChange={(e) => setPlanSelection(e.target.value)}
+            >
+              <option value="latest">התוכנית האחרונה לחודש זה</option>
+              {plans.map((p, index) => (
+                <option key={p.id} value={p.id}>
+                  תוכנית {index + 1} · {p.goal || "ללא מטרה מוגדרת"}
+                </option>
+              ))}
+              <option value="all">
+                כל הרעיונות בחודש, כולל תוכניות קודמות
+              </option>
+            </select>
+          </Field>
+          <p className="muted">
+            תוכניות קודמות נשמרות בהיסטוריה. שינוי פרטי העסק אינו משכתב תוכן
+            שכבר נשמר; לבניית תוכנית מעודכנת השתמשו בכפתור למעלה.
+          </p>
+        </div>
+      )}
+      {displayedPlans.map((p) => (
         <div className="strategy" key={p.id}>
           <h2>הכיוון לחודש הזה</h2>
           <p>{p.strategy}</p>

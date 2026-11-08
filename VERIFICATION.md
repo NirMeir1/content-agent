@@ -1,5 +1,7 @@
 # Verification — 2026-11-08
 
+Follow-up fix: the no-key generator incorrectly reused business-coaching topics after a different business profile was saved. Fixed by isolating fictional coaching fixtures and generating no-key topic/draft templates from current services, field, audience, needs and questions. The calendar now defaults to the latest plan, with explicit history selection, and prominently explains the limitations of no-AI generation. No customer data was reset. Regression run: 17 unit tests, all 6 production desktop/mobile journeys, TypeScript, ESLint and production build passed. Bakery and florist cases assert topic relevance and absence of coaching-template leakage; browser tests also verify two plans in one month display 8 current ideas rather than 16 mixed ideas. Live AI remains unverified.
+
 Environment: Windows PowerShell, Node 24.16.0, npm 11.13.0, Next.js 16.4.5, Chromium 158 through Playwright. No OPENAI_API_KEY was present. No external account was provisioned and no deployment was performed.
 
 | Check | Actual result |

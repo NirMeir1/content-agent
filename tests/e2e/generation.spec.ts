@@ -13,17 +13,20 @@ test("blank onboarding, planning, explicit drafting and revisions work without a
   await page
     .getByLabel("שם העסק", { exact: true })
     .fill("סטודיו פיילוט " + testInfo.project.name);
-  await page.getByLabel("תחום העיסוק", { exact: true }).fill("תכנון זמן");
+  await page.getByLabel("תחום העיסוק", { exact: true }).fill("מאפייה");
+  await page
+    .getByLabel("שירותים והצעות", { exact: true })
+    .fill("עוגות חתונה בהתאמה אישית");
   await page.getByRole("button", { name: "שמירה והמשך" }).click();
   await page
     .getByLabel("למי התוכן מיועד?", { exact: true })
-    .fill("עצמאיות בתחילת הדרך");
+    .fill("זוגות לפני חתונה");
   await page
     .getByLabel("מה מעסיק את הקהל?", { exact: true })
-    .fill("עומס משימות");
+    .fill("בחירת עיצוב לעוגת חתונה");
   await page
     .getByLabel("מה תרצי לקדם?", { exact: true })
-    .fill("שיחות על סדרי עדיפויות");
+    .fill("פניות להזמנת עוגות חתונה");
   await page.getByRole("button", { name: "שמירת פרטים", exact: true }).click();
   await expect(page.getByText("השינויים נשמרו", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "תוכנית התוכן", exact: true }).click();
@@ -37,6 +40,19 @@ test("blank onboarding, planning, explicit drafting and revisions work without a
     page.getByText("דוגמת הדגמה — לא נוצרה באמצעות AI", { exact: true }),
   ).toBeVisible();
   await expect(page.locator(".idea-card")).toHaveCount(8);
+  await expect(page.locator(".idea-card").first()).toContainText("עוגות חתונה");
+  expect(await page.locator(".calendar").innerText()).not.toMatch(
+    /משימה אחת|עצמאיות|תכנון שבוע/,
+  );
+  // A second plan for the same month must not mix old ideas into the current calendar.
+  await page
+    .getByRole("button", { name: "בנה לי תוכנית תוכן", exact: true })
+    .click();
+  await expect(page.locator(".idea-card")).toHaveCount(8);
+  await expect(page.getByLabel("תוכנית להצגה")).toHaveValue("latest");
+  await page.getByLabel("תוכנית להצגה").selectOption("all");
+  await expect(page.locator(".idea-card")).toHaveCount(16);
+  await page.getByLabel("תוכנית להצגה").selectOption("latest");
   await expect(
     page.getByRole("heading", { name: "הכיוון לחודש הזה" }),
   ).toBeVisible();
@@ -62,6 +78,8 @@ test("blank onboarding, planning, explicit drafting and revisions work without a
   const initial = await page
     .getByLabel("כיתוב הפוסט", { exact: true })
     .inputValue();
+  expect(initial).toContain("עוגות חתונה בהתאמה אישית");
+  expect(initial).not.toMatch(/תכנון שבוע|משימה אחת|עצמאיות/);
   await page.getByRole("button", { name: "קצר יותר", exact: true }).click();
   await expect(
     page.getByLabel("צפייה בגרסה קודמת").locator("option"),

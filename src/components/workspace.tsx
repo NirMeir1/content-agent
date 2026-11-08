@@ -321,7 +321,7 @@ export function Workspace() {
                 </div>
               </>
             ) : tab === 1 ? (
-              <Planner s={s} send={send} openDraft={openDraft} />
+              <Planner s={s} send={send} openDraft={openDraft} ai={data.ai} />
             ) : tab === 2 ? (
               <Studio
                 s={s}

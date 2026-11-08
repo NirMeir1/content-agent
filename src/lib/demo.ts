@@ -1,4 +1,5 @@
 import { randomUUID as uuid } from "node:crypto";
+export { demoPlan, demoDraft } from "./profile-templates";
 import {
   type State,
   type Profile,
@@ -89,7 +90,7 @@ const angles = [
   "לבדוק מה באמת דחוף",
   "לסיים שבוע עם שאלה טובה",
 ];
-export function demoPlan(p: Profile, month: string, count = 8, offset = 0) {
+function fictionalCoachPlan(p: Profile, month: string, count = 8, offset = 0) {
   return {
     strategy: `תוכנית הדגמה: תוכן שימושי עבור ${p.audience || "הקהל שטרם הוגדר"}, בשפה ${p.tone || "בהירה"}. המטרה: ${p.goal || "דורשת הגדרה"}. מתחילים בצורך, עוברים לשאלה אישית ומסיימים בהזמנה לשיחה. יש להתאים את הדוגמאות לעסק לפני שימוש.`,
     ideas: Array.from({ length: count }, (_, i) => ({
@@ -108,7 +109,7 @@ export function demoPlan(p: Profile, month: string, count = 8, offset = 0) {
     })),
   };
 }
-export function demoDraft(
+function fictionalCoachDraft(
   p: Profile,
   idea: Idea,
   rules: State["rules"] = [],
@@ -190,7 +191,7 @@ export function demoDraft(
 export function seededState(): State {
   const s = emptyState();
   s.profile = structuredClone(demoProfile);
-  const plan = demoPlan(s.profile, localDate().slice(0, 7));
+  const plan = fictionalCoachPlan(s.profile, localDate().slice(0, 7));
   const planId = uuid();
   s.plans.push({
     id: planId,
@@ -216,7 +217,7 @@ export function seededState(): State {
         at: new Date().toISOString(),
         kind: "original",
         source: "demo",
-        content: demoDraft(s.profile, idea),
+        content: fictionalCoachDraft(s.profile, idea),
       },
     ],
   }));
