@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 export function accessRequired() {
   return (
     !!process.env.PILOT_ACCESS_CODE ||
@@ -43,6 +43,12 @@ export function verifySession(value: string) {
   }
 }
 export async function authorized() {
+  if (process.env.BOTTOMLINE_DESKTOP_SECRET) {
+    const actual = (await headers()).get("x-bottomline-desktop") || "";
+    const expected = process.env.BOTTOMLINE_DESKTOP_SECRET;
+    const supplied = Buffer.from(actual), wanted = Buffer.from(expected);
+    return supplied.length === wanted.length && timingSafeEqual(supplied, wanted);
+  }
   return (
     !accessRequired() ||
     verifySession((await cookies()).get("pilot_session")?.value || "")

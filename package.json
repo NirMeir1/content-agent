@@ -15,7 +15,16 @@
     "demo:seed": "tsx scripts/database.ts seed",
     "demo:reset": "tsx scripts/database.ts reset",
     "format": "prettier --write src scripts tests *.ts *.mjs *.json",
-    "test:access": "tsx scripts/verify-access.ts"
+    "test:access": "tsx scripts/verify-access.ts",
+    "desktop:package": "node scripts/package-desktop.mjs",
+    "desktop:test": "node scripts/verify-desktop.mjs",
+    "proxy:build": "node scripts/build-proxy.mjs",
+    "proxy:start": "node .proxy-build/server.cjs",
+    "desktop:zip": "node scripts/finalize-desktop.mjs",
+    "desktop:release": "npm run desktop:package && npm run desktop:test && npm run desktop:zip",
+    "proxy:test": "npm run proxy:build && node scripts/verify-proxy.mjs",
+    "proxy:test:live": "npm run proxy:build && node --import tsx scripts/verify-proxy-live.ts",
+    "desktop:release:embedded": "npm run desktop:package -- --with-openai-key && npm run desktop:test && npm run desktop:zip"
   },
   "dependencies": {
     "@fontsource/heebo": "^5.3.0",
@@ -29,12 +38,16 @@
     "zod": "latest"
   },
   "devDependencies": {
+    "@electron/fuses": "^2.1.3",
     "@playwright/test": "latest",
     "@tailwindcss/postcss": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "dotenv": "latest",
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0",
+    "esbuild": "^0.28.2",
     "eslint": "latest",
     "eslint-config-next": "16.4.5",
     "prettier": "^3.9.10",

@@ -4,6 +4,7 @@ import type { State } from "@/lib/contracts";
 import { authorized, sameOrigin } from "@/lib/auth";
 import { loadWorkspace, saveWorkspace } from "@/lib/db";
 import { applyAction } from "@/lib/actions";
+import { aiAvailable } from "@/lib/ai-availability";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
   if (!key.success)
     return NextResponse.json({ error: "סביבה לא תקינה" }, { status: 400 });
   return NextResponse.json(
-    { ...(await loadWorkspace(key.data)), ai: !!process.env.OPENAI_API_KEY },
+    { ...(await loadWorkspace(key.data)), ai: aiAvailable() },
     { headers: { "Cache-Control": "no-store" } },
   );
 }
@@ -45,13 +46,13 @@ export async function POST(request: Request) {
     return NextResponse.json({
       state,
       revision,
-      ai: !!process.env.OPENAI_API_KEY,
+      ai: aiAvailable(),
     });
   } catch (error) {
     return NextResponse.json(
       {
         ...checkpoint,
-        ai: !!process.env.OPENAI_API_KEY,
+        ai: aiAvailable(),
         error:
           error instanceof Error
             ? error.name === "ZodError"

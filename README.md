@@ -1,5 +1,7 @@
 # Bottomline Content Lab — Pilot
 
+Windows desktop packaging: see [DESKTOP.md](DESKTOP.md). Client artifacts are generated in `release/`. No client installation is needed. Real AI can use a provisioned hosted proxy or the owner's explicitly requested embedded-key build, which calls OpenAI directly over the internet. The latter ZIP contains an extractable API credential and must be kept private.
+
 יישום פיילוט בעברית לתכנון וכתיבת תוכן לעסק יחיד. המסמך `Bottomline_Codex_MVP_Prompt.md` הוא מקור האמת. אין פרסום לרשתות, חיבור לחשבונות חברתיים או הבטחה לתוצאות שיווקיות.
 
 ## התחלה מקומית

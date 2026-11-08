@@ -11,3 +11,30 @@ playwright-report/
 .playwright-mcp/
 *.tsbuildinfo
 output/
+release/
+.desktop-build/
+.desktop-cache/
+.proxy-build/
+desktop/client.private.json
+proxy/clients.private.json
+
+# Private client configuration, including local copies
+*.private.json
+
+# Build, test, and hosting output
+/out/
+/dist/
+/coverage/
+/blob-report/
+/.vercel/
+
+# Runtime and package-manager diagnostics
+*.log
+*.log.*
+*.pid
+*.pid.lock
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
